@@ -628,6 +628,119 @@ function cambiarPantalla(idPantalla) {
 
 
 
+// ========================================
+// EXPORTAR DATOS
+// ========================================
+
+document.getElementById('btn-exportar').addEventListener('click', function() {
+    
+    // Recoger todos los datos guardados en localStorage
+    const config = localStorage.getItem('config');
+    const historial = localStorage.getItem('historial');
+    const lecturaPendiente = localStorage.getItem('lecturaPendiente');
+    
+    // Verificar que haya algo para exportar
+    if (!config && !historial && !lecturaPendiente) {
+        alert('No hay datos guardados para exportar');
+        return;
+    }
+    
+    // Armar un objeto con todo
+    const datosCompletos = {
+        version: 1,
+        fechaExportacion: new Date().toISOString(),
+        config: config ? JSON.parse(config) : null,
+        historial: historial ? JSON.parse(historial) : [],
+        lecturaPendiente: lecturaPendiente ? JSON.parse(lecturaPendiente) : null
+    };
+    
+    // Convertir a texto JSON con formato bonito
+    const textoJson = JSON.stringify(datosCompletos, null, 2);
+    
+    // Crear un archivo temporal para descargar
+    const blob = new Blob([textoJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Nombre del archivo con la fecha
+    const fecha = new Date().toLocaleDateString('es-CO').replaceAll('/', '-');
+    const nombreArchivo = 'contador-luz-backup-' + fecha + '.json';
+    
+    // Crear un enlace temporal y hacerle click automáticamente
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nombreArchivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Liberar la memoria
+    URL.revokeObjectURL(url);
+    
+    alert('Datos exportados. Guarda el archivo en un lugar seguro.');
+});
+
+
+
+document.getElementById('input-importar').addEventListener('change', function(evento) {
+    
+    const archivo = evento.target.files[0];
+    
+    if (!archivo) return;
+    
+    // Verificar que sea un archivo JSON
+    if (!archivo.name.endsWith('.json')) {
+        alert('El archivo debe ser .json');
+        return;
+    }
+    
+    const lector = new FileReader();
+    
+    lector.onload = function(e) {
+        try {
+            const datos = JSON.parse(e.target.result);
+            
+            // Validar que tenga la estructura esperada
+            if (!datos.version) {
+                alert('El archivo no parece ser un backup válido');
+                return;
+            }
+            
+            const confirmar = confirm('¿Seguro que quieres importar estos datos? Los datos actuales se van a reemplazar. Esta acción no se puede deshacer.');
+            
+            if (!confirmar) {
+                document.getElementById('input-importar').value = '';
+                return;
+            }
+            
+            // Guardar los datos importados en localStorage
+            if (datos.config) {
+                localStorage.setItem('config', JSON.stringify(datos.config));
+            }
+            if (datos.historial) {
+                localStorage.setItem('historial', JSON.stringify(datos.historial));
+            }
+            if (datos.lecturaPendiente) {
+                localStorage.setItem('lecturaPendiente', JSON.stringify(datos.lecturaPendiente));
+            }
+            
+            alert('Datos importados correctamente. La página se va a recargar.');
+            location.reload();
+            
+        } catch (error) {
+            alert('El archivo no se pudo leer. Verifica que sea un backup válido.');
+            console.error(error);
+        }
+    };
+    
+    lector.onerror = function() {
+        alert('Error al leer el archivo');
+    };
+    
+    lector.readAsText(archivo);
+});
+
+
+
 cargarConfiguracion();
 mostrarLecturaAnterior();
 mostrarEstadoPrincipal();

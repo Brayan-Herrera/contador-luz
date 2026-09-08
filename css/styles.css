@@ -534,3 +534,33 @@ nav button.activo:hover {
     font-weight: 700;
     color: var(--naranja-oscuro);
 }
+
+
+
+.separador {
+    height: 1px;
+    background-color: var(--gris-borde);
+    margin: var(--espacio-lg) 0;
+}
+
+.seccion-backup {
+    margin-top: var(--espacio-md);
+}
+
+.titulo-backup {
+    font-size: 1rem;
+    color: var(--negro-texto);
+    margin-bottom: var(--espacio-xs);
+    font-weight: 600;
+}
+
+.info-backup {
+    color: var(--gris-texto);
+    font-size: 0.8125rem;
+    margin-bottom: var(--espacio-md);
+    line-height: 1.5;
+}
+
+.seccion-backup .btn-secundario {
+    margin-top: var(--espacio-sm);
+}
